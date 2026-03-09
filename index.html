@@ -171,7 +171,7 @@ function getFromURL() {
 async function fetchFromJsonBin(id) {
   // 确保 Key 和你的 API 设置一致
   const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, {
-    headers: { 'X-Master-Key': '$2a$10$BvdfXhcr9WFCWiZZjPzpq.LB2mbmZW6G8mkcoUGxJ9XEqULlAqHqi' }
+    headers: { 'X-Master-Key': '$2a$10$whavlAn//4nqsCD2Z06ViO1cDM1yL3ZHEnQjbsqdAmgJ7zYRcGLaS' }
   });
   
   const json = await res.json();
