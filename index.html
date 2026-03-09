@@ -163,12 +163,17 @@ body { background: var(--paper); color: var(--ink); font-family: 'Noto Serif SC'
 // 方式A：直接粘贴 JSON（把 null 替换为 JSON 对象）
 const TRAVEL_DATA = null;
 
-// 方式B：URL参数 ?data=<base64编码JSON>
+// 方式B：URL参数 ?id=<jsonbin_id> 或 ?data=<base64>
 function getFromURL() {
-  try {
-    const p = new URLSearchParams(window.location.search).get('data');
-    return p ? JSON.parse(decodeURIComponent(atob(p))) : null;
-  } catch(e) { return null; }
+  return null; // 异步处理，见下方 init
+}
+
+async function fetchFromJsonBin(id) {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, {
+    headers: { 'X-Master-Key': '$2a$10$MtIyjMTmzyWjS43LLs0fcOKXKkSajv228y18FqEfhihJ4KLOUNhNC' }
+  });
+  const json = await res.json();
+  return json.record;
 }
 
 // 方式C：iframe postMessage
@@ -370,19 +375,36 @@ function initBudgetAnim() {
 }
 
 // ═══ 启动 ═══
-(function(){
-  const data = TRAVEL_DATA || getFromURL();
-  if (data) { setTimeout(()=>renderAll(data), 200); return; }
-  // 无数据时显示提示
+(async function(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const dataParam = params.get('data');
+
+  if (TRAVEL_DATA) { setTimeout(()=>renderAll(TRAVEL_DATA), 200); return; }
+
+  if (id) {
+    document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#888;font-family:serif">⏳ 正在加载旅行规划...</div>';
+    try {
+      const data = await fetchFromJsonBin(id);
+      renderAll(data);
+    } catch(e) {
+      document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#c00;font-family:serif">❌ 数据加载失败，请重试</div>';
+    }
+    return;
+  }
+
+  if (dataParam) {
+    try {
+      const data = JSON.parse(decodeURIComponent(atob(dataParam)));
+      setTimeout(()=>renderAll(data), 200);
+    } catch(e) {}
+    return;
+  }
+
   document.getElementById('app').innerHTML = `<div style="max-width:600px;margin:80px auto;padding:40px;text-align:center;font-family:serif;color:#4a5a5a">
     <div style="font-size:48px;margin-bottom:20px">🗺</div>
     <div style="font-size:18px;color:#2a5f7a;margin-bottom:12px">旅行规划动态模板 v2</div>
-    <div style="font-size:13px;line-height:2">
-      请通过以下方式注入数据：<br>
-      <strong>方式A</strong>：将 TRAVEL_DATA = null 替换为 JSON 对象<br>
-      <strong>方式B</strong>：URL参数 ?data=&lt;base64编码JSON&gt;<br>
-      <strong>方式C</strong>：postMessage { type: 'TRAVEL_DATA', payload: {...} }
-    </div>
+    <div style="font-size:13px;line-height:2">请通过 ?id=jsonbin_id 方式访问</div>
   </div>`;
 })();
 </script>
