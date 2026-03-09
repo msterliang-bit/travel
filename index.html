@@ -170,20 +170,10 @@ function getFromURL() {
 
 async function fetchFromJsonBin(id) {
   const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, {
-    headers: { 'X-Master-Key': '$2a$10$whavlAn//4nqsCD2Z06ViO1cDM1yL3ZHEnQjbsqdAmgJ7zYRcGLaS' }
+    headers: { 'X-Master-Key': '$2a$10$XOIlV.V/iUrd1I5VozXKVeOAH8BOCbV5jranTECPAAqMfnxoL9Cc6' }
   });
   const json = await res.json();
   return json.record;
-}
-
-// 添加 KV.IO 获取函数
-async function fetchFromKvIo(key) {
-    const res = await fetch(`https://kv.io/api/get/${key}`);
-    if (!res.ok) {
-        throw new Error(`KV.IO 返回 ${res.status}`);
-    }
-    const data = await res.json();
-    return data.value; // KV.IO 返回 { value: 你的数据 }
 }
 
 // 方式C：iframe postMessage
@@ -388,27 +378,10 @@ function initBudgetAnim() {
 (async function(){
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  const kv = params.get('kv');  // 新增 KV.IO 支持
   const dataParam = params.get('data');
 
-  if (TRAVEL_DATA) { 
-    setTimeout(()=>renderAll(TRAVEL_DATA), 200); 
-    return; 
-  }
+  if (TRAVEL_DATA) { setTimeout(()=>renderAll(TRAVEL_DATA), 200); return; }
 
-  // 优先处理 KV.IO
-  if (kv) {
-    document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#888;font-family:serif">⏳ 正在加载旅行规划...</div>';
-    try {
-      const data = await fetchFromKvIo(kv);
-      renderAll(data);
-    } catch(e) {
-      document.getElementById('app').innerHTML = `<div style="padding:80px;text-align:center;color:#c00;font-family:serif">❌ 加载失败: ${e.message}</div>`;
-    }
-    return;
-  }
-
-  // 原有的 JSONBin 支持
   if (id) {
     document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#888;font-family:serif">⏳ 正在加载旅行规划...</div>';
     try {
@@ -431,7 +404,7 @@ function initBudgetAnim() {
   document.getElementById('app').innerHTML = `<div style="max-width:600px;margin:80px auto;padding:40px;text-align:center;font-family:serif;color:#4a5a5a">
     <div style="font-size:48px;margin-bottom:20px">🗺</div>
     <div style="font-size:18px;color:#2a5f7a;margin-bottom:12px">旅行规划动态模板 v2</div>
-    <div style="font-size:13px;line-height:2">请通过 ?kv=xxx 方式访问</div>
+    <div style="font-size:13px;line-height:2">请通过 ?id=jsonbin_id 方式访问</div>
   </div>`;
 })();
 </script>
