@@ -169,11 +169,15 @@ function getFromURL() {
 }
 
 async function fetchFromJsonBin(id) {
+  // 确保 Key 和你的 API 设置一致
   const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, {
-    headers: { 'X-Master-Key': '$2a$10$MtIyjMTmzyWjS43LLs0fcOKXKkSajv228y18FqEfhihJ4KLOUNhNC' }
+    headers: { 'X-Master-Key': '$2a$10$BvdfXhcr9WFCWiZZjPzpq.LB2mbmZW6G8mkcoUGxJ9XEqULlAqHqi' }
   });
+  
   const json = await res.json();
-  return json.record;
+  
+  // 智能解析：如果包含 record 字段则提取，否则返回整个对象
+  return (json && json.record) ? json.record : json;
 }
 
 // 方式C：iframe postMessage
