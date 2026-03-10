@@ -404,7 +404,7 @@ async function saveAsImage() {
     });
 
     const link = document.createElement('a');
-    link.download = '皮皮旅游规划-${data.title || '行程'}.jpg';
+    link.download = '皮皮旅游规划师.jpg';
     link.href = canvas.toDataURL('image/jpeg', 0.92);
     document.body.appendChild(link);
     link.click();
@@ -413,7 +413,7 @@ async function saveAsImage() {
     alert('保存失败：' + e.message);
   }
 
-  btn.textContent = '📷 保存为图片';
+  btn.textContent = '📷 保存';
   btn.disabled = false;
 }
 
