@@ -35,11 +35,11 @@ body { background: var(--paper); color: var(--ink); font-family: 'Noto Serif SC'
 .sec-sub { font-size: 12px; color: var(--stone); margin-top: 3px; }
 
 /* OVERVIEW */
-.overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.ov-card { background: white; border: 1px solid rgba(42,95,122,0.12); padding: 16px; border-left: 3px solid var(--river); transition: transform 0.2s; }
-.ov-card:hover { transform: translateY(-2px); }
-.ov-card .label { font-size: 10px; letter-spacing: 2px; color: var(--stone); text-transform: uppercase; margin-bottom: 6px; }
-.ov-card .value { font-size: 14px; color: var(--ink); font-weight: 600; line-height: 1.5; }
+.overview-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.ov-card { background: white; border: 1px solid rgba(42,95,122,0.12); padding: 14px 20px; border-left: 3px solid var(--river); display: flex; align-items: baseline; gap: 16px; transition: transform 0.2s; }
+.ov-card:hover { transform: translateX(4px); }
+.ov-card .label { font-size: 11px; letter-spacing: 2px; color: var(--river); text-transform: uppercase; min-width: 72px; flex-shrink: 0; }
+.ov-card .value { font-size: 14px; color: var(--ink); font-weight: 600; line-height: 1.6; }
 .tip-bar { background: linear-gradient(90deg, rgba(42,95,122,0.08), transparent); border-left: 3px solid var(--amber); padding: 12px 16px; font-size: 12px; color: var(--stone); line-height: 1.7; }
 .tip-bar strong { color: var(--amber); }
 
@@ -150,10 +150,12 @@ body { background: var(--paper); color: var(--ink); font-family: 'Noto Serif SC'
 .print-btn { position: fixed; bottom: 28px; right: 28px; background: var(--river); color: white; border: none; padding: 12px 22px; font-family: 'Noto Serif SC', serif; font-size: 12px; letter-spacing: 2px; cursor: pointer; border-radius: 24px; box-shadow: 0 4px 20px rgba(42,95,122,0.35); transition: transform 0.2s, box-shadow 0.2s; z-index: 99; }
 .print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(42,95,122,0.45); }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 <div id="app"></div>
-<button class="print-btn" onclick="window.print()">🖨 保存 / 打印</button>
+<button class="print-btn" onclick="saveAsImage()">📷 保存为图片</button>
+
 
 <script>
 // ═══════════════════════════════════════════════
@@ -202,7 +204,7 @@ function renderAll(d) {
     renderTransport(d.transport||[]) +
     renderTips(d.tips||[], d.footer_tip) +
     '</div>' +
-    `<footer class="footer"><strong>AI 旅行规划助手</strong> · ${esc(d.title)} · 数据仅供参考，出行前请核实最新票价</footer>`;
+    `<footer class="footer"><strong>皮皮旅游规划师</strong> · ${esc(d.title)} · 数据仅供参考，出行前请核实最新票价</footer>`;
   initBudgetAnim();
 }
 
@@ -363,6 +365,56 @@ function renderTips(tips, footerTip) {
   const ft = footerTip ? `<div class="tip-bar" style="margin-top:16px">${esc(footerTip)}</div>` : '';
   return `<div class="sec-head"><div class="sec-num">08</div><div><div class="sec-label">Tips · 避坑 &amp; 旅行贴士</div></div></div>
   <div class="tips-grid">${cards}</div>${ft}`;
+}
+
+async function saveAsImage() {
+  const btn = document.querySelector('.print-btn');
+  btn.textContent = '⏳ 生成中...';
+  btn.disabled = true;
+
+  try {
+    // 1. 先让所有动画元素变为可见
+    document.querySelectorAll('.day-wrap').forEach(el => {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      el.style.animation = 'none';
+    });
+    document.querySelectorAll('.bb-fill').forEach(el => {
+      el.style.width = el.dataset.w || el.style.width;
+      el.style.transition = 'none';
+    });
+
+    // 2. 等待一帧确保渲染完成
+    await new Promise(r => setTimeout(r, 800));
+
+    const target = document.getElementById('app');
+    const canvas = await html2canvas(target, {
+      scale: 1.5,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#faf7f0',
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      width: target.scrollWidth,
+      height: target.scrollHeight,
+      windowWidth: target.scrollWidth,
+      windowHeight: target.scrollHeight
+    });
+
+    const link = document.createElement('a');
+    link.download = '旅行规划.jpg';
+    link.href = canvas.toDataURL('image/jpeg', 0.92);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch(e) {
+    alert('保存失败：' + e.message);
+  }
+
+  btn.textContent = '📷 保存为图片';
+  btn.disabled = false;
 }
 
 function initBudgetAnim() {
