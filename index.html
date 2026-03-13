@@ -3,275 +3,679 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>旅行规划 · 动态模板 v2</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<title>皮皮旅游规划师 · 小红书版</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.bootcdn.net/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js"></script>
 <style>
 :root {
-  --river: #2a5f7a; --river-light: #3a7a9a; --gorge: #1a3a2a;
-  --sand: #f0ead8; --bark: #8b6914; --mist: #e8f0f5;
-  --stone: #4a5a5a; --red: #c0392b; --green: #2e7d52;
-  --amber: #d4820a; --ink: #1a2020; --paper: #faf7f0;
+  /* ── 主题色变量（由JS动态切换）── */
+  --t1: #ff6b9d;
+  --t2: #ff8ab4;
+  --t3: #ff5757;
+  --t4: #ffb347;
+  --t-pale1: var(--t-pale1);
+  --t-pale2: var(--t-pale2);
+  --t-pale3: var(--t-pale3);
+  --t-bg: var(--t-bg);
+  --t-light: var(--t-light);
+  --t-hero1: #ff6b9d;
+  --t-hero2: #ff8ab4;
+  --t-hero3: #ffb3c6;
+  --t-hero4: #ffd6e8;
+  --t-shadow: 255,107,157;
+
+  /* ── 固定色 ── */
+  --pink: var(--t1);
+  --pink2: var(--t2);
+  --coral: var(--t3);
+  --peach: var(--t4);
+  --mint: #4ecdc4;
+  --lavender: #c3b1e1;
+  --sky-c: #87ceeb;
+  --cream: var(--t-bg);
+  --white: #ffffff;
+  --dark: #2d2d2d;
+  --gray: #888;
+  --light: var(--t-light);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: var(--paper); color: var(--ink); font-family: 'Noto Serif SC', serif; overflow-x: hidden; }
+body {
+  background: linear-gradient(135deg, var(--t-pale1) 0%, var(--t-bg) 50%, var(--t-pale3) 100%);
+  color: var(--dark);
+  font-family: 'Noto Sans SC', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
 
-/* HERO */
-.hero { background: linear-gradient(160deg, var(--gorge) 0%, var(--river) 60%, #1a4a5a 100%); padding: 64px 24px 80px; position: relative; overflow: hidden; }
-.hero::before { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 60px; background: var(--paper); clip-path: ellipse(55% 100% at 50% 100%); }
-.hero::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 80px); }
-.hero-inner { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; text-align: center; }
-.hero-eyebrow { font-size: 11px; letter-spacing: 6px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 16px; }
-.hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(40px, 8vw, 72px); font-weight: 700; color: white; line-height: 1.05; margin-bottom: 8px; }
-.hero h1 em { font-style: italic; color: #7dd3f0; }
-.hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); letter-spacing: 3px; margin-bottom: 32px; }
-.badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 12px; padding: 6px 16px; border-radius: 20px; }
+/* 背景装饰 */
+body::before {
+  content: '';
+  position: fixed;
+  top: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(var(--t-shadow),0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -100px; left: -100px;
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(var(--t-shadow),0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-/* LAYOUT */
-.page { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
-.sec-head { display: flex; align-items: center; gap: 14px; padding: 40px 0 24px; border-bottom: 1px solid rgba(42,95,122,0.15); margin-bottom: 28px; }
-.sec-num { font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 700; color: rgba(42,95,122,0.12); line-height: 1; min-width: 52px; }
-.sec-label { font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--river); }
-.sec-sub { font-size: 12px; color: var(--stone); margin-top: 3px; }
+/* 英雄区 */
+.hero {
+  position: relative;
+  background: linear-gradient(135deg, var(--t-hero1) 0%, var(--t-hero2) 40%, var(--t-hero3) 70%, var(--t-hero4) 100%);
+  padding: 56px 24px 80px;
+  overflow: hidden;
+  z-index: 1;
+}
+.hero-deco {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.15;
+}
+.hero-deco-1 { width: 300px; height: 300px; background: white; top: -100px; right: -80px; }
+.hero-deco-2 { width: 200px; height: 200px; background: white; bottom: -60px; left: -60px; }
+.hero-deco-3 { width: 80px; height: 80px; background: white; top: 40px; left: 30%; }
+.hero-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--t1);
+  font-weight: 700;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(var(--t-shadow),0.2);
+}
+.hero-inner { position: relative; z-index: 2; text-align: center; max-width: 700px; margin: 0 auto; }
+.hero h1 {
+  font-size: clamp(40px, 9vw, 72px);
+  font-weight: 900;
+  color: white;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  text-shadow: 0 4px 24px rgba(var(--t-shadow),0.3);
+  letter-spacing: -1px;
+}
+.hero-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+.badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.badge {
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
 
-/* OVERVIEW */
-.overview-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-.ov-card { background: white; border: 1px solid rgba(42,95,122,0.12); padding: 14px 20px; border-left: 3px solid var(--river); display: flex; align-items: baseline; gap: 16px; transition: transform 0.2s; }
-.ov-card:hover { transform: translateX(4px); }
-.ov-card .label { font-size: 11px; letter-spacing: 2px; color: var(--river); text-transform: uppercase; min-width: 72px; flex-shrink: 0; }
-.ov-card .value { font-size: 14px; color: var(--ink); font-weight: 600; line-height: 1.6; }
-.tip-bar { background: linear-gradient(90deg, rgba(42,95,122,0.08), transparent); border-left: 3px solid var(--amber); padding: 12px 16px; font-size: 12px; color: var(--stone); line-height: 1.7; }
-.tip-bar strong { color: var(--amber); }
+/* 内容区 */
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 16px 80px;
+  position: relative;
+  z-index: 1;
+}
 
-/* TIMELINE */
-.day-wrap { display: grid; grid-template-columns: 56px 1fr; gap: 0 20px; margin-bottom: 4px; opacity: 0; animation: slideIn 0.5s ease forwards; }
-.day-wrap:nth-child(1) { animation-delay: 0.1s; }
-.day-wrap:nth-child(2) { animation-delay: 0.25s; }
-.day-wrap:nth-child(3) { animation-delay: 0.4s; }
-.day-wrap:nth-child(4) { animation-delay: 0.55s; }
-.day-wrap:nth-child(5) { animation-delay: 0.7s; }
-@keyframes slideIn { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
-.day-badge { display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-.day-badge .dn { font-size: 11px; font-weight: 700; color: var(--river); background: white; border: 2px solid var(--river); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; letter-spacing: 0; z-index: 1; position: relative; }
-.day-badge .line { width: 2px; flex: 1; background: linear-gradient(var(--river), rgba(42,95,122,0.1)); min-height: 40px; margin-top: 4px; }
-.day-card { background: white; border: 1px solid rgba(42,95,122,0.1); margin-bottom: 16px; overflow: hidden; }
-.day-header { background: linear-gradient(90deg, var(--river), var(--river-light)); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
-.day-title { font-size: 15px; font-weight: 600; color: white; }
-.day-route { font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 1px; }
-.slots { display: grid; grid-template-columns: repeat(3,1fr); }
-.slot { padding: 14px 16px; border-right: 1px solid rgba(42,95,122,0.08); }
-.slot:last-child { border-right: none; }
-.slot-time { font-size: 10px; letter-spacing: 1px; color: var(--amber); font-weight: 600; margin-bottom: 6px; }
-.slot-icon { font-size: 18px; margin-bottom: 6px; }
-.slot-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
-.slot-detail { font-size: 11px; color: var(--stone); line-height: 1.6; }
-.slot-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-.slot-tag { font-size: 10px; padding: 2px 8px; background: var(--mist); color: var(--river); border-radius: 10px; }
-.slot-tag.cost { background: rgba(212,130,10,0.1); color: var(--amber); }
-.slot-tag.transport { background: rgba(46,125,82,0.1); color: var(--green); }
-@media(max-width:600px) { .slots { grid-template-columns: 1fr; } .slot { border-right: none; border-bottom: 1px solid rgba(42,95,122,0.08); } }
+/* 章节标题 */
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 36px 0 16px;
+}
+.sec-tag {
+  background: linear-gradient(135deg, var(--pink), var(--coral));
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+.sec-label {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--dark);
+}
+.sec-sub {
+  font-size: 11px;
+  color: var(--gray);
+  margin-left: auto;
+}
 
-/* SPOTS */
-.spots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 14px; }
-.spot-card { background: white; border: 1px solid rgba(42,95,122,0.1); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
-.spot-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(42,95,122,0.12); }
-.spot-top { padding: 18px 18px 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+/* 卡片通用 */
+.card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.08);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(var(--t-shadow),0.15); }
+
+/* 概览 */
+.ov-cards { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.ov-item {
+  background: white;
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow: 0 2px 12px rgba(var(--t-shadow),0.06);
+}
+.ov-dot {
+  width: 8px; height: 8px;
+  background: linear-gradient(135deg, var(--pink), var(--coral));
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.ov-label { font-size: 11px; font-weight: 700; color: var(--pink); min-width: 64px; flex-shrink: 0; }
+.ov-val { font-size: 13px; color: var(--dark); line-height: 1.6; font-weight: 500; }
+.weather-card {
+  background: linear-gradient(135deg, var(--t-pale1), #f0f8ff);
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-size: 12px;
+  color: var(--gray);
+  line-height: 1.8;
+  margin-top: 8px;
+  border: 1px solid rgba(var(--t-shadow),0.1);
+}
+
+/* 时间轴 */
+.timeline { margin-top: 12px; display: flex; flex-direction: column; gap: 16px; }
+.day-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.08);
+  opacity: 0;
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.day-card:nth-child(1) { animation-delay: 0.1s; }
+.day-card:nth-child(2) { animation-delay: 0.2s; }
+.day-card:nth-child(3) { animation-delay: 0.3s; }
+@keyframes popIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:none; } }
+.day-header {
+  background: linear-gradient(135deg, var(--pink), var(--coral));
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.day-num {
+  background: rgba(255,255,255,0.25);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.day-title { color: white; font-size: 14px; font-weight: 700; }
+.day-route { color: rgba(255,255,255,0.7); font-size: 10px; }
+.slots { padding: 0 4px; }
+.slot {
+  display: grid;
+  grid-template-columns: 60px 36px 1fr;
+  gap: 4px 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--t-pale1);
+  align-items: start;
+}
+.slot:last-child { border-bottom: none; }
+.slot-time {
+  font-size: 10px;
+  color: var(--gray);
+  font-weight: 500;
+  padding-top: 2px;
+}
+.slot-emoji {
+  font-size: 22px;
+  grid-row: 1 / 3;
+  text-align: center;
+  padding-top: 2px;
+}
+.slot-name { font-size: 13px; font-weight: 700; color: var(--dark); }
+.slot-detail { font-size: 11px; color: var(--gray); line-height: 1.6; grid-column: 3; }
+.slot-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; grid-column: 1/-1; }
+.slot-tag {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: var(--t-pale1);
+  color: var(--pink);
+}
+.slot-tag.cost { background: var(--t-pale1); color: var(--coral); }
+.slot-tag.transport { background: #f0fff8; color: var(--mint); }
+
+/* 景点 */
+.spots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.spot-card {
+  background: white;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.spot-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+}
+.spot-card.high::after { background: linear-gradient(90deg, var(--coral), var(--pink)); }
+.spot-card.mid::after { background: linear-gradient(90deg, var(--peach), #ffcc80); }
+.spot-card.low::after { background: linear-gradient(90deg, var(--lavender), var(--sky)); }
+.spot-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(var(--t-shadow),0.15); }
+.spot-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
 .spot-emoji { font-size: 32px; }
-.spot-priority { font-size: 10px; padding: 3px 10px; border-radius: 10px; letter-spacing: 1px; }
-.spot-priority.high { background: rgba(192,57,43,0.1); color: var(--red); }
-.spot-priority.mid { background: rgba(42,95,122,0.1); color: var(--river); }
-.spot-priority.low { background: rgba(74,90,90,0.1); color: var(--stone); }
-.spot-body { padding: 0 18px 18px; }
-.spot-name { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
-.spot-desc { font-size: 12px; color: var(--stone); line-height: 1.7; margin-bottom: 10px; }
-.spot-meta { display: flex; gap: 10px; flex-wrap: wrap; }
-.spot-meta span { font-size: 11px; color: var(--amber); }
-.spot-meta span::before { content: '◆ '; font-size: 8px; }
+.spot-priority {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.spot-priority.high { background: var(--t-pale1); color: var(--coral); }
+.spot-priority.mid { background: var(--t-pale3); color: var(--peach); }
+.spot-priority.low { background: #f0f0ff; color: var(--lavender); }
+.spot-name { font-size: 15px; font-weight: 900; color: var(--dark); margin-bottom: 6px; }
+.spot-desc { font-size: 11px; color: var(--gray); line-height: 1.7; margin-bottom: 10px; }
+.spot-meta { display: flex; flex-wrap: wrap; gap: 4px; }
+.spot-meta span {
+  font-size: 10px;
+  background: var(--t-pale1);
+  color: var(--pink);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
 
-/* FOOD */
-.food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 12px; }
-.food-card { background: white; border: 1px solid rgba(42,95,122,0.1); padding: 16px; display: flex; gap: 12px; align-items: flex-start; transition: transform 0.2s; }
-.food-card:hover { transform: translateY(-2px); }
-.food-emoji { font-size: 28px; flex-shrink: 0; }
-.food-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
-.food-shop { font-size: 11px; color: var(--stone); margin-bottom: 3px; }
-.food-price { font-size: 12px; color: var(--amber); font-weight: 600; }
-.food-note { font-size: 11px; color: var(--stone); margin-top: 3px; line-height: 1.5; }
+/* 美食 */
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.food-card {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.08);
+  transition: transform 0.2s;
+}
+.food-card:hover { transform: translateY(-3px); }
+.food-emoji { font-size: 36px; margin-bottom: 8px; }
+.food-name { font-size: 14px; font-weight: 900; color: var(--dark); margin-bottom: 3px; }
+.food-shop { font-size: 10px; color: var(--gray); margin-bottom: 6px; }
+.food-price { font-size: 16px; font-weight: 900; color: var(--coral); margin-bottom: 6px; }
+.food-note { font-size: 11px; color: var(--gray); line-height: 1.6; }
 
-/* HOTELS */
-.hotel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media(max-width:540px) { .hotel-grid { grid-template-columns: 1fr; } }
-.hotel-card { background: white; border: 1px solid rgba(42,95,122,0.1); padding: 18px; border-top: 3px solid var(--river); }
-.hotel-type { font-size: 10px; letter-spacing: 2px; color: var(--stone); text-transform: uppercase; margin-bottom: 8px; }
-.hotel-name { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
-.hotel-loc { font-size: 12px; color: var(--stone); margin-bottom: 10px; }
-.hotel-price { font-size: 18px; font-weight: 700; color: var(--river); font-family: 'Playfair Display', serif; margin-bottom: 8px; }
-.hotel-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.hotel-tag { font-size: 10px; padding: 2px 8px; background: var(--mist); color: var(--river); border-radius: 10px; }
+/* 住宿 */
+.hotel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.hotel-card {
+  background: white;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.08);
+  transition: transform 0.2s;
+}
+.hotel-card:hover { transform: translateY(-3px); }
+.hotel-type {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--pink), var(--coral));
+  color: white;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.hotel-name { font-size: 15px; font-weight: 900; color: var(--dark); margin-bottom: 4px; }
+.hotel-loc { font-size: 11px; color: var(--gray); margin-bottom: 8px; }
+.hotel-price { font-size: 18px; font-weight: 900; color: var(--coral); margin-bottom: 10px; }
+.hotel-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.hotel-tag {
+  font-size: 10px;
+  background: var(--t-pale1);
+  color: var(--pink);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
 
-/* BUDGET */
-.budget-wrap { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; align-items: start; }
-@media(max-width:600px) { .budget-wrap { grid-template-columns: 1fr; } }
-.budget-chart-box { background: var(--gorge); padding: 24px; border-radius: 4px; }
-.bc-title { font-size: 10px; letter-spacing: 3px; color: rgba(255,255,255,0.4); margin-bottom: 16px; text-transform: uppercase; }
-.donut-row { display: flex; align-items: center; gap: 20px; }
+/* 预算 */
+.budget-wrap {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+@media (max-width: 600px) { .budget-wrap { grid-template-columns: 1fr; } }
+.budget-chart-box {
+  background: linear-gradient(135deg, var(--pink), var(--coral));
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+}
+.bc-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 16px; letter-spacing: 1px; }
+.donut-row { display: flex; align-items: center; gap: 14px; }
 .donut { width: 110px; height: 110px; flex-shrink: 0; }
-.bc-legends { flex: 1; }
-.bc-leg { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 11px; color: rgba(255,255,255,0.8); }
-.bc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.bc-pct { margin-left: auto; color: #7dd3f0; font-size: 10px; }
-.budget-bars { display: flex; flex-direction: column; gap: 10px; }
-.bb-row { display: flex; align-items: center; gap: 10px; }
-.bb-name { font-size: 12px; color: var(--ink); min-width: 72px; }
-.bb-track { flex: 1; height: 6px; background: rgba(42,95,122,0.1); border-radius: 3px; overflow: hidden; }
-.bb-fill { height: 100%; border-radius: 3px; transition: width 1.4s cubic-bezier(0.22,1,0.36,1); }
-.bb-val { font-size: 12px; color: var(--amber); min-width: 52px; text-align: right; }
-.budget-total { margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(42,95,122,0.2); display: flex; justify-content: space-between; align-items: center; }
-.budget-total .label { font-size: 12px; color: var(--stone); }
-.budget-total .val { font-size: 20px; font-weight: 700; color: var(--river); font-family: 'Playfair Display', serif; }
+.bc-legends { display: flex; flex-direction: column; gap: 6px; }
+.bc-leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.85); font-weight: 500; }
+.bc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.bc-pct { margin-left: auto; color: rgba(255,255,255,0.5); font-size: 10px; }
+.budget-bars-box {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.08);
+}
+.budget-bars { display: flex; flex-direction: column; gap: 12px; }
+.bb-row { display: grid; grid-template-columns: 80px 1fr 60px; align-items: center; gap: 8px; }
+.bb-name { font-size: 11px; color: var(--gray); text-align: right; font-weight: 500; }
+.bb-track { height: 8px; background: var(--t-pale1); border-radius: 999px; overflow: hidden; }
+.bb-fill { height: 100%; width: 0; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); border-radius: 999px; }
+.bb-val { font-size: 11px; color: var(--dark); font-weight: 700; }
+.budget-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px dashed var(--t-pale1);
+}
+.budget-total .label { font-size: 12px; color: var(--gray); font-weight: 600; }
+.budget-total .val { font-size: 20px; font-weight: 900; color: var(--coral); }
 
-/* TRANSPORT */
-.transit-table { width: 100%; border-collapse: collapse; }
-.transit-table th { background: var(--river); color: white; font-size: 11px; letter-spacing: 2px; font-weight: 400; padding: 10px 14px; text-align: left; }
-.transit-table td { padding: 10px 14px; font-size: 12px; border-bottom: 1px solid rgba(42,95,122,0.08); color: var(--ink); line-height: 1.6; }
-.transit-table tr:last-child td { border-bottom: none; }
-.transit-table tr:nth-child(even) td { background: rgba(42,95,122,0.03); }
+/* 交通 */
+.transport-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.transport-item {
+  background: white;
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 100px 1fr 80px;
+  gap: 8px 16px;
+  align-items: center;
+  box-shadow: 0 2px 12px rgba(var(--t-shadow),0.06);
+}
+.transport-mode { font-size: 13px; font-weight: 900; color: var(--dark); }
+.transport-coverage { font-size: 11px; color: var(--gray); line-height: 1.6; }
+.transport-cost { font-size: 13px; font-weight: 900; color: var(--coral); text-align: right; }
+.transport-note { font-size: 10px; color: var(--gray); grid-column: 1/-1; }
 
-/* TIPS */
-.tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media(max-width:580px) { .tips-grid { grid-template-columns: 1fr; } }
-.tip-card { background: white; border: 1px solid rgba(42,95,122,0.1); padding: 16px; display: flex; gap: 12px; }
-.tip-icon { font-size: 22px; flex-shrink: 0; }
-.tip-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
-.tip-text { font-size: 12px; color: var(--stone); line-height: 1.7; }
+/* 贴士 */
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.tip-card {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.08);
+  transition: transform 0.2s;
+}
+.tip-card:hover { transform: translateY(-2px); }
+.tip-icon { font-size: 24px; flex-shrink: 0; }
+.tip-title { font-size: 13px; font-weight: 900; color: var(--dark); margin-bottom: 4px; }
+.tip-text { font-size: 11px; color: var(--gray); line-height: 1.7; }
+.footer-tip {
+  background: linear-gradient(135deg, var(--t-pale1), #f0f8ff);
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-size: 12px;
+  color: var(--gray);
+  line-height: 1.8;
+  margin-top: 10px;
+  border: 1px dashed rgba(var(--t-shadow),0.2);
+}
 
-.footer { text-align: center; padding: 40px 20px; border-top: 1px solid rgba(42,95,122,0.12); color: var(--stone); font-size: 12px; letter-spacing: 2px; }
-.footer strong { color: var(--river); }
-.print-btn { position: fixed; bottom: 28px; right: 28px; background: var(--river); color: white; border: none; padding: 12px 22px; font-family: 'Noto Serif SC', serif; font-size: 12px; letter-spacing: 2px; cursor: pointer; border-radius: 24px; box-shadow: 0 4px 20px rgba(42,95,122,0.35); transition: transform 0.2s, box-shadow 0.2s; z-index: 99; }
-.print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(42,95,122,0.45); }
+/* 页脚 */
+.footer {
+  text-align: center;
+  padding: 32px 20px;
+  position: relative;
+  z-index: 1;
+}
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--pink), var(--coral));
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 10px 24px;
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.3);
+  margin-bottom: 12px;
+}
+.footer-sub { font-size: 11px; color: var(--gray); }
+
+/* 保存按钮 */
+.print-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, var(--pink), var(--coral));
+  color: white;
+  border: none;
+  padding: 14px 22px;
+  font-size: 13px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 100;
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(var(--t-shadow),0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.print-btn:hover { transform: scale(1.05); box-shadow: 0 8px 28px rgba(var(--t-shadow),0.5); }
+
+/* 波浪底部 */
+.hero-wave {
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+}
+
+/* ── Twemoji 彩色 emoji ── */
+img.emoji {
+  display: inline-block;
+  width: 1em; height: 1em;
+  vertical-align: -0.15em;
+}
+.slot-emoji  img.emoji { width: 1.5em; height: 1.5em; vertical-align: -0.3em; }
+.spot-emoji  img.emoji { width: 2em;   height: 2em;   vertical-align: -0.35em; }
+.food-emoji  img.emoji { width: 2.2em; height: 2.2em; vertical-align: -0.35em; }
+.tip-icon    img.emoji { width: 1.5em; height: 1.5em; vertical-align: -0.25em; }
+.day-title   img.emoji { width: 1em;   height: 1em;   vertical-align: -0.1em; }
+.badge       img.emoji { width: 0.9em; height: 0.9em; vertical-align: -0.1em; }
+.footer-brand img.emoji{ width: 1em;   height: 1em;   vertical-align: -0.1em; }
+/* 彩色字体兜底（twemoji未加载时） */
+.slot-emoji, .spot-emoji, .food-emoji, .tip-icon,
+.day-title, .badge, .hero-sticker, .footer-brand,
+.transport-mode, .weather-card, .slot-tag {
+  font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","EmojiOne Color",sans-serif;
+}
+
+/* ── 彩色 emoji 背景（解决黑白问题）── */
+.spot-emoji {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.spot-card.high .spot-emoji { background: linear-gradient(135deg, var(--t-pale1), var(--t-pale2)); }
+.spot-card.mid  .spot-emoji { background: linear-gradient(135deg, var(--t-pale3), var(--t-pale3)); }
+.spot-card.low  .spot-emoji { background: linear-gradient(135deg, #f0f0ff, #e8e0ff); }
+
+.slot-emoji {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  background: linear-gradient(135deg, var(--t-pale1), var(--t-pale2));
+  grid-row: 1 / 3;
+  flex-shrink: 0;
+}
+
+.food-emoji {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  background: linear-gradient(135deg, var(--t-pale3), var(--t-pale3));
+  margin-bottom: 10px;
+}
+
+.tip-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--t-pale1), var(--t-pale2));
+}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 <div id="app"></div>
-<button class="print-btn" onclick="saveAsImage()">📷 保存为图片</button>
-
-
+<button class="print-btn" onclick="saveAsImage()">📷 保存</button>
 <script>
-// ═══════════════════════════════════════════════
-//  JSON 注入口（三种方式任选其一）
-// ═══════════════════════════════════════════════
-
-// 方式A：直接粘贴 JSON（把 null 替换为 JSON 对象）
 const TRAVEL_DATA = null;
-
-// 方式B：URL参数 ?id=<jsonbin_id> 或 ?data=<base64>
-function getFromURL() {
-  return null; // 异步处理，见下方 init
-}
-
-async function fetchFromJsonBin(id) {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, {
-    headers: { 'X-Master-Key': '$2a$10$XOIlV.V/iUrd1I5VozXKVeOAH8BOCbV5jranTECPAAqMfnxoL9Cc6' }
-  });
-  const json = await res.json();
-  return json.record;
-}
-
-// 方式C：iframe postMessage
-window.addEventListener('message', e => {
-  if (e.data && e.data.type === 'TRAVEL_DATA') renderAll(e.data.payload);
-});
-
-// ═══ 工具 ═══
-const COLORS = ['#2a5f7a','#8b6914','#d4820a','#2e7d52','#7dd3f0','#c0392b'];
+const COLORS = [getComputedStyle(document.documentElement).getPropertyValue('--t1').trim(),'#4ecdc4','#c3b1e1','#ffb347','#87ceeb','#ff8ab4'];
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ═══ 渲染入口 ═══
+async function fetchFromJsonBin(id) {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, { headers: { 'X-Master-Key': '$2a$10$XOIlV.V/iUrd1I5VozXKVeOAH8BOCbV5jranTECPAAqMfnxoL9Cc6' } });
+  return (await res.json()).record;
+}
+window.addEventListener('message', e => { if (e.data?.type === 'TRAVEL_DATA') renderAll(e.data.payload); });
+
 function renderAll(d) {
-  if (!d || !d.title) { document.getElementById('app').innerHTML = '<div style="padding:60px;text-align:center;color:#888">⚠️ 数据加载失败，请检查 JSON 格式</div>'; return; }
+  window._currentData = d;
+  if (!d || !d.title) { document.getElementById('app').innerHTML = '<div style="padding:60px;text-align:center;color:#888">⚠️ 数据加载失败</div>'; return; }
   const total = (d.budget||[]).reduce((s,b)=>s+(b.amount||0),0);
-  const maxAmt = Math.max(...(d.budget||[]).map(b=>b.amount||0), 1);
+  const maxAmt = Math.max(...(d.budget||[]).map(b=>b.amount||0),1);
   document.getElementById('app').innerHTML =
-    renderHero(d) +
-    '<div class="page">' +
-    renderOverview(d.overview) +
-    renderTimeline(d.days||[]) +
-    renderSpots(d.spots||[]) +
-    renderFoods(d.foods||[]) +
-    renderHotels(d.hotels||[]) +
-    renderBudget(d.budget||[], total, maxAmt) +
-    renderTransport(d.transport||[]) +
-    renderTips(d.tips||[], d.footer_tip) +
+    renderHero(d) + '<div class="page">' +
+    renderOverview(d.overview) + renderTimeline(d.days||[]) +
+    renderSpots(d.spots||[]) + renderFoods(d.foods||[]) +
+    renderHotels(d.hotels||[]) + renderBudget(d.budget||[], total, maxAmt) +
+    renderTransport(d.transport||[]) + renderTips(d.tips||[], d.footer_tip) +
     '</div>' +
-    `<footer class="footer"><strong>皮皮旅游规划师</strong> · ${esc(d.title)} · 数据仅供参考，出行前请核实最新票价</footer>`;
+    `<footer class="footer"><div class="footer-brand">🗺 皮皮旅游规划师</div><div class="footer-sub">${esc(d.title)} · 数据仅供参考，出行前请核实</div></footer>`;
   initBudgetAnim();
+  if (typeof twemoji !== 'undefined') {
+    twemoji.parse(document.getElementById('app'), {
+      folder: 'svg', ext: '.svg',
+      base: 'https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/'
+    });
+  }
 }
 
 function renderHero(d) {
-  const parts = (d.title||'').split('·');
-  const t1 = esc(parts[0]||''), t2 = parts[1] ? `<em>${esc(parts[1])}</em>` : '';
   const badges = (d.badges||[]).map(b=>`<span class="badge">${esc(b)}</span>`).join('');
-  return `<div class="hero"><div class="hero-inner">
-    <div class="hero-eyebrow">Travel Plan · 旅行计划书</div>
-    <h1>${t1}${t2?' · '+t2:''}</h1>
-    <div class="hero-sub">${esc(d.subtitle||d.year_season||'')}</div>
-    <div class="badges">${badges}</div>
-  </div></div>`;
+  return `<div class="hero">
+    <div class="hero-deco hero-deco-1"></div>
+    <div class="hero-deco hero-deco-2"></div>
+    <div class="hero-deco hero-deco-3"></div>
+    <div class="hero-inner">
+      <div class="hero-sticker">✨ 皮皮旅游规划师</div>
+      <h1>${esc((d.title||"").split("·")[0].split("•")[0].trim())}</h1>
+      <div class="hero-sub">${esc(d.subtitle||d.year_season||'')}</div>
+      <div class="badges">${badges}</div>
+    </div>
+    <svg class="hero-wave" viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0 60 C360 0 1080 0 1440 60 L1440 60 L0 60Z" fill="#ffffff"/>
+    </svg>
+  </div>`;
 }
 
 function renderOverview(ov) {
   if (!ov) return '';
-  const cards = (ov.items||[]).map(i=>`<div class="ov-card"><div class="label">${esc(i.label)}</div><div class="value">${esc(i.value)}</div></div>`).join('');
-  const tip = ov.weather_tip ? `<div class="tip-bar" style="margin-top:12px">${esc(ov.weather_tip)}</div>` : '';
-  return `<div class="sec-head"><div class="sec-num">01</div><div><div class="sec-label">Overview · 旅行概览</div><div class="sec-sub">核心体验 · 适合人群 · 天气提示</div></div></div>
-  <div class="overview-grid">${cards}</div>${tip}`;
+  const items = (ov.items||[]).map(i=>`<div class="ov-item"><div class="ov-dot"></div><div class="ov-label">${esc(i.label)}</div><div class="ov-val">${esc(i.value)}</div></div>`).join('');
+  const tip = ov.weather_tip ? `<div class="weather-card">${esc(ov.weather_tip)}</div>` : '';
+  return `<div class="sec-head"><div class="sec-tag">01</div><div class="sec-label">旅行概览</div><div class="sec-sub">核心体验 · 适合人群</div></div>
+  <div class="ov-cards">${items}</div>${tip}`;
 }
 
 function renderTimeline(days) {
   if (!days.length) return '';
-  const dayWords = ['One','Two','Three','Four','Five','Six','Seven'];
-  const items = days.map((day, i) => {
+  const items = days.map((day,i) => {
     const slots = (day.slots||[]).map(s => {
       const tags = (s.tags||[]).map(t=>`<span class="slot-tag ${esc(t.type||'')}">${esc(t.text)}</span>`).join('');
       return `<div class="slot">
         <div class="slot-time">${esc(s.time)}</div>
-        <div class="slot-icon">${esc(s.emoji)}</div>
+        <div class="slot-emoji">${esc(s.emoji)}</div>
         <div class="slot-name">${esc(s.name)}</div>
         <div class="slot-detail">${esc(s.detail)}</div>
         ${tags?`<div class="slot-tags">${tags}</div>`:''}
       </div>`;
     }).join('');
-    const isLast = i === days.length - 1;
-    return `<div class="day-wrap">
-      <div class="day-badge">
-        <div class="dn">D${i+1}</div>
-        ${!isLast?'<div class="line"></div>':'<div class="line" style="background:rgba(42,95,122,0.1)"></div>'}
+    return `<div class="day-card">
+      <div class="day-header">
+        <div><div class="day-title">${esc(day.title)}</div><div class="day-route">${esc(day.route||'')}</div></div>
+        <div class="day-num">Day ${i+1}</div>
       </div>
-      <div class="day-card">
-        <div class="day-header">
-          <div class="day-title">${esc(day.title)}</div>
-          <div class="day-route">${esc(day.route||'')}</div>
-        </div>
-        <div class="slots">${slots}</div>
-      </div>
+      <div class="slots">${slots}</div>
     </div>`;
   }).join('');
-  return `<div class="sec-head"><div class="sec-num">02</div><div><div class="sec-label">Itinerary · 时间轴行程</div><div class="sec-sub">${days.length}天详细安排 · 上午 / 下午 / 晚上</div></div></div>
+  return `<div class="sec-head"><div class="sec-tag">02</div><div class="sec-label">每日行程</div><div class="sec-sub">${days.length}天安排</div></div>
   <div class="timeline">${items}</div>`;
 }
 
 function renderSpots(spots) {
   if (!spots.length) return '';
-  const cards = spots.map(s=>`<div class="spot-card">
+  const cards = spots.map(s=>`<div class="spot-card ${esc(s.priority)}">
     <div class="spot-top"><div class="spot-emoji">${esc(s.emoji)}</div><span class="spot-priority ${esc(s.priority)}">${esc(s.priority_label)}</span></div>
-    <div class="spot-body">
-      <div class="spot-name">${esc(s.name)}</div>
-      <div class="spot-desc">${esc(s.desc)}</div>
-      <div class="spot-meta">${(s.meta||[]).map(m=>`<span>${esc(m)}</span>`).join('')}</div>
-    </div>
+    <div class="spot-name">${esc(s.name)}</div>
+    <div class="spot-desc">${esc(s.desc)}</div>
+    <div class="spot-meta">${(s.meta||[]).map(m=>`<span>${esc(m)}</span>`).join('')}</div>
   </div>`).join('');
-  return `<div class="sec-head"><div class="sec-num">03</div><div><div class="sec-label">Spots · 景点推荐</div><div class="sec-sub">${spots.length}处核心景点 · 优先级 · 游览要点</div></div></div>
+  return `<div class="sec-head"><div class="sec-tag">03</div><div class="sec-label">景点推荐</div><div class="sec-sub">${spots.length}个景点</div></div>
   <div class="spots-grid">${cards}</div>`;
 }
 
@@ -279,14 +683,12 @@ function renderFoods(foods) {
   if (!foods.length) return '';
   const cards = foods.map(f=>`<div class="food-card">
     <div class="food-emoji">${esc(f.emoji)}</div>
-    <div>
-      <div class="food-name">${esc(f.name)}</div>
-      <div class="food-shop">${esc(f.shop)}</div>
-      <div class="food-price">${esc(f.price)}</div>
-      <div class="food-note">${esc(f.note)}</div>
-    </div>
+    <div class="food-name">${esc(f.name)}</div>
+    <div class="food-shop">${esc(f.shop)}</div>
+    <div class="food-price">${esc(f.price)}</div>
+    <div class="food-note">${esc(f.note)}</div>
   </div>`).join('');
-  return `<div class="sec-head"><div class="sec-num">04</div><div><div class="sec-label">Food · 特色美食</div><div class="sec-sub">${foods.length}道必吃 · 推荐店铺 · 价格参考</div></div></div>
+  return `<div class="sec-head"><div class="sec-tag">04</div><div class="sec-label">特色美食</div><div class="sec-sub">${foods.length}道必吃</div></div>
   <div class="food-grid">${cards}</div>`;
 }
 
@@ -299,7 +701,7 @@ function renderHotels(hotels) {
     <div class="hotel-price">${esc(h.price)}</div>
     <div class="hotel-tags">${(h.tags||[]).map(t=>`<span class="hotel-tag">${esc(t)}</span>`).join('')}</div>
   </div>`).join('');
-  return `<div class="sec-head"><div class="sec-num">05</div><div><div class="sec-label">Stay · 住宿建议</div></div></div>
+  return `<div class="sec-head"><div class="sec-tag">05</div><div class="sec-label">住宿推荐</div></div>
   <div class="hotel-grid">${cards}</div>`;
 }
 
@@ -307,158 +709,328 @@ function renderBudget(budget, total, maxAmt) {
   if (!budget.length) return '';
   const C = 2*Math.PI*45;
   let offset = 0;
-  const segs = budget.map((b,i)=>{
-    const len = total>0?(b.amount/total)*C:0;
-    const s = `<circle cx="60" cy="60" r="45" fill="none" stroke="${COLORS[i%COLORS.length]}" stroke-width="18"
-      stroke-dasharray="${len.toFixed(1)} ${(C-len).toFixed(1)}"
-      stroke-dashoffset="${(-offset).toFixed(1)}" transform="rotate(-90 60 60)"/>`;
-    offset+=len; return s;
-  }).join('');
-  const legs = budget.map((b,i)=>{
-    const pct = total>0?Math.round(b.amount/total*100):0;
-    return `<div class="bc-leg"><div class="bc-dot" style="background:${COLORS[i%COLORS.length]}"></div>${esc(b.name)}<span class="bc-pct">${pct}%</span></div>`;
-  }).join('');
-  const bars = budget.map((b,i)=>{
-    const w = maxAmt>0?Math.round(b.amount/maxAmt*100):0;
-    return `<div class="bb-row">
-      <span class="bb-name">${esc(b.emoji||'')} ${esc(b.name)}</span>
-      <div class="bb-track"><div class="bb-fill" data-w="${w}%" style="width:0;background:${COLORS[i%COLORS.length]}"></div></div>
-      <span class="bb-val">¥${b.amount.toLocaleString()}</span>
-    </div>`;
-  }).join('');
-  return `<div class="sec-head"><div class="sec-num">06</div><div><div class="sec-label">Budget · 费用预算</div><div class="sec-sub">总计 ¥${total.toLocaleString()}</div></div></div>
+  const segs = budget.map((b,i)=>{ const len=total>0?(b.amount/total)*C:0; const s=`<circle cx="60" cy="60" r="45" fill="none" stroke="${COLORS[i%COLORS.length]}" stroke-width="16" stroke-dasharray="${len.toFixed(1)} ${(C-len).toFixed(1)}" stroke-dashoffset="${(-offset).toFixed(1)}" transform="rotate(-90 60 60)"/>`; offset+=len; return s; }).join('');
+  const legs = budget.map((b,i)=>{ const pct=total>0?Math.round(b.amount/total*100):0; return `<div class="bc-leg"><div class="bc-dot" style="background:${COLORS[i%COLORS.length]}"></div>${esc(b.name)}<span class="bc-pct">${pct}%</span></div>`; }).join('');
+  const bars = budget.map((b,i)=>{ const w=maxAmt>0?Math.round(b.amount/maxAmt*100):0; return `<div class="bb-row"><span class="bb-name">${esc(b.emoji||'')} ${esc(b.name)}</span><div class="bb-track"><div class="bb-fill" data-w="${w}%" style="width:0;background:${COLORS[i%COLORS.length]}"></div></div><span class="bb-val">¥${b.amount.toLocaleString()}</span></div>`; }).join('');
+  return `<div class="sec-head"><div class="sec-tag">06</div><div class="sec-label">费用预算</div><div class="sec-sub">总计 ¥${total.toLocaleString()}</div></div>
   <div class="budget-wrap">
-    <div class="budget-chart-box">
-      <div class="bc-title">Budget Breakdown</div>
-      <div class="donut-row">
-        <svg class="donut" viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="45" fill="none" stroke="#0d2a1a" stroke-width="18"/>
-          ${segs}
-          <text x="60" y="55" text-anchor="middle" fill="#7dd3f0" font-size="13" font-weight="bold" font-family="serif">¥${total.toLocaleString()}</text>
-          <text x="60" y="70" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8" font-family="serif">总预算</text>
-        </svg>
-        <div class="bc-legends">${legs}</div>
-      </div>
-    </div>
-    <div><div class="budget-bars">${bars}</div>
-      <div class="budget-total">
-        <span class="label">严格控制预算内</span>
-        <span class="val">¥${total.toLocaleString()}</span>
-      </div>
-    </div>
+    <div class="budget-chart-box"><div class="bc-title">BUDGET</div><div class="donut-row"><svg class="donut" viewBox="0 0 120 120"><circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="16"/>${segs}<text x="60" y="55" text-anchor="middle" fill="white" font-size="11" font-weight="bold">¥${total.toLocaleString()}</text><text x="60" y="70" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8">总预算</text></svg><div class="bc-legends">${legs}</div></div></div>
+    <div class="budget-bars-box"><div class="budget-bars">${bars}</div><div class="budget-total"><span class="label">预算总计</span><span class="val">¥${total.toLocaleString()}</span></div></div>
   </div>`;
 }
 
 function renderTransport(trans) {
   if (!trans.length) return '';
-  const rows = trans.map(t=>`<tr><td>${esc(t.mode)}</td><td>${esc(t.coverage)}</td><td>${esc(t.cost)}</td><td>${esc(t.note)}</td></tr>`).join('');
-  return `<div class="sec-head"><div class="sec-num">07</div><div><div class="sec-label">Transport · 交通指南</div></div></div>
-  <table class="transit-table"><thead><tr><th>交通方式</th><th>覆盖范围</th><th>费用</th><th>注意事项</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const items = trans.map(t=>`<div class="transport-item">
+    <div class="transport-mode">${esc(t.mode)}</div>
+    <div class="transport-coverage">${esc(t.coverage)}</div>
+    <div class="transport-cost">${esc(t.cost)}</div>
+    <div class="transport-note">${esc(t.note)}</div>
+  </div>`).join('');
+  return `<div class="sec-head"><div class="sec-tag">07</div><div class="sec-label">交通指南</div></div>
+  <div class="transport-list">${items}</div>`;
 }
 
 function renderTips(tips, footerTip) {
   if (!tips.length) return '';
-  const cards = tips.map(t=>`<div class="tip-card">
-    <div class="tip-icon">${esc(t.icon)}</div>
-    <div><div class="tip-title">${esc(t.title)}</div><div class="tip-text">${esc(t.text)}</div></div>
-  </div>`).join('');
-  const ft = footerTip ? `<div class="tip-bar" style="margin-top:16px">${esc(footerTip)}</div>` : '';
-  return `<div class="sec-head"><div class="sec-num">08</div><div><div class="sec-label">Tips · 避坑 &amp; 旅行贴士</div></div></div>
+  const cards = tips.map(t=>`<div class="tip-card"><div class="tip-icon">${esc(t.icon)}</div><div><div class="tip-title">${esc(t.title)}</div><div class="tip-text">${esc(t.text)}</div></div></div>`).join('');
+  const ft = footerTip ? `<div class="footer-tip">${esc(footerTip)}</div>` : '';
+  return `<div class="sec-head"><div class="sec-tag">08</div><div class="sec-label">避坑贴士</div></div>
   <div class="tips-grid">${cards}</div>${ft}`;
 }
 
 async function saveAsImage() {
   const btn = document.querySelector('.print-btn');
-  btn.textContent = '⏳ 生成中...';
-  btn.disabled = true;
-
+  btn.textContent = '⏳ 生成中...'; btn.disabled = true;
   try {
-    // 1. 先让所有动画元素变为可见
-    document.querySelectorAll('.day-wrap').forEach(el => {
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-      el.style.animation = 'none';
-    });
-    document.querySelectorAll('.bb-fill').forEach(el => {
-      el.style.width = el.dataset.w || el.style.width;
-      el.style.transition = 'none';
-    });
-
-    // 2. 等待一帧确保渲染完成
+    document.querySelectorAll('.day-card').forEach(el => { el.style.opacity='1'; el.style.transform='none'; el.style.animation='none'; });
+    document.querySelectorAll('.bb-fill').forEach(el => { el.style.width=el.dataset.w; el.style.transition='none'; });
     await new Promise(r => setTimeout(r, 800));
-
     const target = document.getElementById('app');
-    const canvas = await html2canvas(target, {
-      scale: 1.5,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#faf7f0',
-      scrollX: 0,
-      scrollY: 0,
-      x: 0,
-      y: 0,
-      width: target.scrollWidth,
-      height: target.scrollHeight,
-      windowWidth: target.scrollWidth,
-      windowHeight: target.scrollHeight
-    });
-
-    const link = document.createElement('a');
-    link.download = '皮皮旅游规划师.jpg';
-    link.href = canvas.toDataURL('image/jpeg', 0.92);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch(e) {
-    alert('保存失败：' + e.message);
-  }
-
-  btn.textContent = '📷 保存';
-  btn.disabled = false;
+    const canvas = await html2canvas(target, { scale:1.5, useCORS:true, allowTaint:true, backgroundColor:'#ffffff', scrollX:0, scrollY:0, x:0, y:0, width:target.scrollWidth, height:target.scrollHeight });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      // 手机端：在新窗口打开图片，提示长按保存
+      const win = window.open('', '_blank');
+      win.document.write('<html><body style="margin:0;background:#000;display:flex;flex-direction:column;align-items:center;min-height:100vh">'
+        + '<div style="color:white;padding:16px;font-size:14px;font-family:sans-serif;text-align:center">📱 长按图片 → 选择"保存到相册"</div>'
+        + '<img src="' + dataUrl + '" style="width:100%;max-width:800px;display:block"/>'
+        + '</body></html>');
+      win.document.close();
+    } else {
+      // 电脑端：直接下载
+      const link = document.createElement('a');
+      link.download = '皮皮旅游规划-' + ((TRAVEL_DATA||window._currentData||{}).title||'行程') + '.jpg';
+      link.href = dataUrl;
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+  } catch(e) { alert('保存失败：'+e.message); }
+  btn.textContent = '📷 保存'; btn.disabled = false;
 }
 
 function initBudgetAnim() {
   const fills = document.querySelectorAll('.bb-fill');
-  const obs = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) { fills.forEach(f=>{ f.style.width=f.dataset.w; }); obs.disconnect(); }
-  }, { threshold: 0.3 });
+  const obs = new IntersectionObserver(entries => { if (entries[0].isIntersecting) { fills.forEach(f=>{ f.style.width=f.dataset.w; }); obs.disconnect(); } }, { threshold: 0.3 });
   const s = document.querySelector('.budget-wrap');
   if (s) obs.observe(s);
 }
 
-// ═══ 启动 ═══
 (async function(){
   const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
-  const dataParam = params.get('data');
-
+  const lzParam = params.get('lz'), id = params.get('id');
   if (TRAVEL_DATA) { setTimeout(()=>renderAll(TRAVEL_DATA), 200); return; }
-
+  if (lzParam) {
+    try { renderAll(JSON.parse(LZString.decompressFromEncodedURIComponent(lzParam))); }
+    catch(e) { document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center">❌ 数据解析失败</div>'; }
+    return;
+  }
   if (id) {
-    document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#888;font-family:serif">⏳ 正在加载旅行规划...</div>';
-    try {
-      const data = await fetchFromJsonBin(id);
-      renderAll(data);
-    } catch(e) {
-      document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#c00;font-family:serif">❌ 数据加载失败，请重试</div>';
-    }
+    document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#888">⏳ 正在加载...</div>';
+    try { renderAll(await fetchFromJsonBin(id)); } catch(e) { document.getElementById('app').innerHTML = '<div style="padding:80px;text-align:center;color:#c00">❌ 加载失败</div>'; }
     return;
   }
-
-  if (dataParam) {
-    try {
-      const data = JSON.parse(decodeURIComponent(atob(dataParam)));
-      setTimeout(()=>renderAll(data), 200);
-    } catch(e) {}
-    return;
-  }
-
-  document.getElementById('app').innerHTML = `<div style="max-width:600px;margin:80px auto;padding:40px;text-align:center;font-family:serif;color:#4a5a5a">
-    <div style="font-size:48px;margin-bottom:20px">🗺</div>
-    <div style="font-size:18px;color:#2a5f7a;margin-bottom:12px">旅行规划动态模板 v2</div>
-    <div style="font-size:13px;line-height:2">请通过 ?id=jsonbin_id 方式访问</div>
+  document.getElementById('app').innerHTML = `<div style="max-width:500px;margin:80px auto;padding:40px;text-align:center">
+    <div style="font-size:64px;margin-bottom:16px">🌸</div>
+    <div style="font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--t1),var(--t3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px">皮皮旅游规划师</div>
+    <div style="font-size:12px;color:#888">请通过智能体生成你的专属行程</div>
   </div>`;
 })();
 </script>
+
+<script>
+// ══════════════════════════════════════════
+// 主题配置
+// ══════════════════════════════════════════
+const THEMES = {
+  pink: {
+    name: '少女粉',
+    icon: '🌸',
+    preview: 'linear-gradient(135deg, #ff6b9d, #ff8ab4)',
+    vars: {
+      '--t1': '#ff6b9d',
+      '--t2': '#ff8ab4',
+      '--t3': '#ff5757',
+      '--t4': '#ffb347',
+      '--t-pale1': '#fff0f8',
+      '--t-pale2': '#ffe0ee',
+      '--t-pale3': '#fff8e8',
+      '--t-bg': '#fff9f5',
+      '--t-light': '#f8f0f5',
+      '--t-hero1': '#ff6b9d',
+      '--t-hero2': '#ff8ab4',
+      '--t-hero3': '#ffb3c6',
+      '--t-hero4': '#ffd6e8',
+      '--t-shadow': '255,107,157',
+    }
+  },
+  teal: {
+    name: '青绿',
+    icon: '🌿',
+    preview: 'linear-gradient(135deg, #0d7377, #14a085)',
+    vars: {
+      '--t1': '#0d7377',
+      '--t2': '#14a085',
+      '--t3': '#e8621a',
+      '--t4': '#f5a623',
+      '--t-pale1': '#e8f6f5',
+      '--t-pale2': '#d0f0ec',
+      '--t-pale3': '#fff3ec',
+      '--t-bg': '#f2f5f4',
+      '--t-light': '#eaf4f3',
+      '--t-hero1': '#0d7377',
+      '--t-hero2': '#14a085',
+      '--t-hero3': '#1abc9c',
+      '--t-hero4': '#80cdc4',
+      '--t-shadow': '13,115,119',
+    }
+  },
+  sky: {
+    name: '天蓝',
+    icon: '🩵',
+    preview: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+    vars: {
+      '--t1': '#1976d2',
+      '--t2': '#42a5f5',
+      '--t3': '#0288d1',
+      '--t4': '#fb8c00',
+      '--t-pale1': '#e3f2fd',
+      '--t-pale2': '#c8e6fc',
+      '--t-pale3': '#fff8e1',
+      '--t-bg': '#f0f7ff',
+      '--t-light': '#e8f4ff',
+      '--t-hero1': '#1976d2',
+      '--t-hero2': '#42a5f5',
+      '--t-hero3': '#90caf9',
+      '--t-hero4': '#c8e6fc',
+      '--t-shadow': '25,118,210',
+    }
+  },
+  sunset: {
+    name: '日落',
+    icon: '🌅',
+    preview: 'linear-gradient(135deg, #5a1878, #c2004d, #d94800, #e09000)',
+    vars: {
+      '--t1': '#5a1878',
+      '--t2': '#c2004d',
+      '--t3': '#d94800',
+      '--t4': '#e09000',
+      '--t-pale1': '#f8eeff',
+      '--t-pale2': '#f0d8ff',
+      '--t-pale3': '#fff3e0',
+      '--t-bg': '#fff8f5',
+      '--t-light': '#fdf0f8',
+      '--t-hero1': '#5a1878',
+      '--t-hero2': '#c2004d',
+      '--t-hero3': '#d94800',
+      '--t-hero4': '#e09000',
+      '--t-shadow': '194,0,77',
+    }
+  }
+};
+
+let currentTheme = 'pink';
+
+function applyTheme(name) {
+  const theme = THEMES[name];
+  if (!theme) return;
+  const root = document.documentElement;
+  Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+  currentTheme = name;
+  // 更新选中态
+  document.querySelectorAll('.theme-dot').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === name);
+  });
+  // 保存
+  try { localStorage.setItem('travel_theme', name); } catch(e) {}
+}
+
+function initThemeSwitcher() {
+  // 浮窗HTML
+  const panel = document.createElement('div');
+  panel.id = 'theme-switcher';
+  panel.innerHTML = `
+    <button class="theme-btn" id="themeToggle" title="切换主题" onclick="toggleThemePanel()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M6.5 3C6.5 3 5 5.5 2 6.5L4.5 11L7 9.5V20H17V9.5L19.5 11L22 6.5C19 5.5 17.5 3 17.5 3C17.5 3 16.5 5 12 5C7.5 5 6.5 3 6.5 3Z"/>
+      </svg>
+    </button>
+    <div class="theme-panel" id="themePanel">
+      <div class="theme-panel-title">选择主题</div>
+      <div class="theme-dots">
+        ${Object.entries(THEMES).map(([k, t]) => `
+          <div class="theme-dot ${k === currentTheme ? 'active' : ''}" 
+               data-theme="${k}" 
+               onclick="applyTheme('${k}'); toggleThemePanel();"
+               title="${t.name}"
+               style="background:${t.preview}">
+            <span class="theme-dot-label">${t.name}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  // 点外面关闭
+  document.addEventListener('click', e => {
+    if (!panel.contains(e.target)) {
+      document.getElementById('themePanel').classList.remove('open');
+    }
+  });
+
+  // 恢复上次主题
+  try {
+    const saved = localStorage.getItem('travel_theme');
+    if (saved && THEMES[saved]) applyTheme(saved);
+  } catch(e) {}
+}
+
+function toggleThemePanel() {
+  const p = document.getElementById('themePanel');
+  p.classList.toggle('open');
+  event.stopPropagation();
+}
+</script>
+
+<style>
+/* ══ 换肤浮窗 ══ */
+#theme-switcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+@keyframes theme-pulse {
+  0%   { box-shadow: 0 4px 16px rgba(var(--t-shadow),0.4), 0 0 0 0px rgba(255,255,255,0.9); }
+  60%  { box-shadow: 0 4px 16px rgba(var(--t-shadow),0.4), 0 0 0 12px rgba(255,255,255,0); }
+  100% { box-shadow: 0 4px 16px rgba(var(--t-shadow),0.4), 0 0 0 0px rgba(255,255,255,0); }
+}
+.theme-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--t1), var(--t3));
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s;
+  animation: theme-pulse 2s ease-in-out infinite;
+  position: relative;
+}
+.theme-btn:hover { transform: scale(1.1); animation: none; box-shadow: 0 6px 20px rgba(var(--t-shadow),0.5); }
+
+.theme-panel {
+  background: white;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 140px;
+}
+.theme-panel.open { display: flex; }
+.theme-panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #999;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.theme-dots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.theme-dot {
+  width: 100%;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.theme-dot:hover { transform: scale(1.03); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+.theme-dot.active {
+  outline: 3px solid #333;
+  outline-offset: 2px;
+}
+.theme-dot-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+</style>
+
+<script>initThemeSwitcher();</script>
 </body>
 </html>
