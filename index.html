@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>皮皮旅游规划师 · 小红书版</title>
+<title>皮皮旅游规划师</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.bootcdn.net/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -431,12 +431,14 @@ body::after {
   padding: 14px 18px;
   display: grid;
   grid-template-columns: 100px 1fr 80px;
-  gap: 8px 16px;
+  grid-template-rows: auto auto;
+  gap: 4px 16px;
   align-items: center;
   box-shadow: 0 2px 12px rgba(var(--t-shadow),0.06);
 }
 .transport-mode { font-size: 13px; font-weight: 900; color: var(--dark); }
 .transport-coverage { font-size: 11px; color: var(--gray); line-height: 1.6; }
+.transport-note { font-size: 11px; color: var(--gray); grid-column: 1 / -1; padding-top: 2px; border-top: 1px solid #f0f0f0; margin-top: 2px; }
 .transport-cost { font-size: 13px; font-weight: 900; color: var(--coral); text-align: right; }
 .transport-note { font-size: 10px; color: var(--gray); grid-column: 1/-1; }
 
